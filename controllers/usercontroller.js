@@ -4,49 +4,72 @@ const { User } = require("../models");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-router.post("/create", async (req, res) => {
 
-    let { username, password } = req.body.user;
-
+router.post('/create', async (req, res) => {
+    const { username, password } = req.body;
+    
     try {
-
-    const newUser = await User.create({
-        username,
-        password
-    });
-
-    res.status(200).json({
+        const NewUser = await User.create({
+            username,
+            password: bcrypt.hashSync(password, 13)
+        })
+        
+        let token = jwt.sign(
+            { id : NewUser.id }, 
+            'Hello I am a secret', 
+            { expiresIn : 60 * 60 * 24 }
+        );
+        
+        res.status(201).json({
+            NewUser,
             message: "User successfully created!",
-            user: newUser
-        });
-
-    } catch (err) {
-        res.status(500).json({ error }) 
+            token
+        })
+    } catch (error) {
+        res.status(500).json({ error })
     }
 });
 
-router.post("/login", async (req, res) => {
-    let { username, password } = req.body.user;
-
+router.post('/login', async (req, res) => {
+    const { username } = req.body;
+    
     try {
-        const loggedInUser = await User.findOne({
-            where : {
-                username: username,
-                password: password
-            }
+        const LoggedInUser = await User.findOne({
+            where: {
+                username: username
+            } 
         })
-        if(loggedInUser) {
-            res.status(200).json({
-                message: "User successfully logged in!",
-                user: loggedInUser
-            })
+        
+        if (LoggedInUser) {
+
+            let passwordComparison = await bcrypt.compare(password, LoggedInUser.passwordHash);
+
+            if (passwordComparison) {
+
+                let token = jwt.sign(
+                    {id: LoggedInUser.id}, 
+                    'Hello I am a secret', 
+                    {expiresIn: 60 * 60 * 24}
+                );
+    
+                res.status(200).json({
+                    LoggedInUser,
+                    message: "User successfully logged in!",
+                    token: token
+                });
+            } else {
+                res.status(401).json({
+                    message: "Incorrect email or password"
+                })
+            }
+
         } else {
             res.status(401).json({
-                message: "Login failed."
-            })
+                message: 'Incorrect email or password'
+            });
         }
-    } catch (err) {
-        res.status(500).json({ Error: err })
+    } catch (error) {
+        res.status(500).json({ error })
     }
 });
 

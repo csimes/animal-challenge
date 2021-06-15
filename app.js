@@ -10,6 +10,8 @@ const controllers = require("./controllers");
 app.use(express.json());
 
 app.use("/user", controllers.usercontroller);
+app.use("/animal", controllers.animalcontroller);
+
 
 db.authenticate()
   .then(() => db.sync()) // => {force: true}
@@ -22,3 +24,5 @@ db.authenticate()
     console.log("[Server: ] Server Crashed");
     console.error(err);
   });
+
+  
