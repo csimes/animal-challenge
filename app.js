@@ -10,6 +10,7 @@ const controllers = require("./controllers");
 app.use(express.json());
 
 app.use("/user", controllers.usercontroller);
+app.use(require("./middleware/validate-session"))
 app.use("/animal", controllers.animalcontroller);
 
 

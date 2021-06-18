@@ -31,7 +31,7 @@ router.post('/create', async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-    const { username } = req.body;
+    const { username, password } = req.body;
     
     try {
         const LoggedInUser = await User.findOne({
@@ -42,7 +42,7 @@ router.post('/login', async (req, res) => {
         
         if (LoggedInUser) {
 
-            let passwordComparison = await bcrypt.compare(password, LoggedInUser.passwordHash);
+            let passwordComparison = await bcrypt.compare(password, LoggedInUser.password);
 
             if (passwordComparison) {
 
